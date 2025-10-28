@@ -17,24 +17,21 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class EventEntry:
-    """Modèle de données pour un événement stocké."""
+    """Data model for a stored event."""
     event_id: EventId
     stream_id: StreamId
     message: JSONRPCMessage
 
 class InMemoryEventStore(EventStore):
-    """
-    Implémentation simple en mémoire pour la reprenabilité (resumability),
-    basée sur votre template.
-    """
+    """A simple in-memory implementation for resumability."""
     def __init__(self, max_events_per_stream: int = 100):
         self.max_events_per_stream = max_events_per_stream
         self.streams: dict[StreamId, deque[EventEntry]] = {}
         self.event_index: dict[EventId, EventEntry] = {}
-        logger.info(f"InMemoryEventStore initialisé avec {max_events_per_stream} événements max par stream.")
+        logger.info(f"InMemoryEventStore initialized with {max_events_per_stream} max events per stream.")
 
     async def store_event(self, stream_id: StreamId, message: JSONRPCMessage) -> EventId:
-        """Stocke un nouveau message d'événement."""
+        """Stores a new event message."""
         event_id = str(uuid4())
         event_entry = EventEntry(event_id=event_id, stream_id=stream_id, message=message)
         
@@ -42,8 +39,8 @@ class InMemoryEventStore(EventStore):
             self.streams[stream_id] = deque(maxlen=self.max_events_per_stream)
         
         if len(self.streams[stream_id]) == self.max_events_per_stream:
-            # Si le deque est plein, l'événement le plus ancien est automatiquement supprimé.
-            # Nous devons aussi le supprimer de l'index de recherche.
+            # If the deque is full, the oldest event is automatically removed.
+            # We also need to remove it from the lookup index.
             oldest_event = self.streams[stream_id][0] 
             self.event_index.pop(oldest_event.event_id, None)
             
@@ -52,9 +49,9 @@ class InMemoryEventStore(EventStore):
         return event_id
 
     async def replay_events_after(self, last_event_id: EventId, send_callback: EventCallback) -> StreamId | None:
-        """Rejoue les événements d'un stream après un ID d'événement donné."""
+        """Replays events from a stream after a given event ID."""
         if last_event_id not in self.event_index:
-            logger.warning(f"Event ID {last_event_id} non trouvé pour le replay.")
+            logger.warning(f"Event ID {last_event_id} not found for replay.")
             return None
         
         last_event = self.event_index[last_event_id]
@@ -70,5 +67,5 @@ class InMemoryEventStore(EventStore):
             elif event.event_id == last_event_id:
                 found_last = True
         
-        logger.debug(f"Rejoué {replayed_count} événements pour le stream {stream_id}")
+        logger.debug(f"Replayed {replayed_count} events for stream {stream_id}")
         return stream_id

@@ -1,122 +1,119 @@
 import mcp.types as types
 
 def get_tools_schema() -> list[types.Tool]:
-    """
-    Définit et retourne le schéma pour tous les tools Salesforce
-    qui seront exposés au LLM.
-    """
+    """Defines and returns the schema for all Salesforce tools to be exposed to the LLM."""
     return [
-        # --- Outils Sales Cloud ---
+        # --- Sales Cloud Tools ---
         types.Tool(
             name="search_contact",
-            description="Recherche un contact dans Salesforce par nom et optionnellement par email.",
+            description="Searches for a contact in Salesforce by name and optionally by email.",
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "name": {"type": "string", "description": "Le nom (ou partie du nom) du contact à rechercher."},
-                    "email": {"type": "string", "description": "(Optionnel) L'email exact du contact pour affiner la recherche."}
+                    "name": {"type": "string", "description": "The name (or part of the name) of the contact to search for."},
+                    "email": {"type": "string", "description": "(Optional) The exact email of the contact to refine the search."}
                 },
                 "required": ["name"],
             },
         ),
         types.Tool(
             name="get_account_details",
-            description="Récupère les détails complets d'un compte client (entreprise) par son nom exact ou son ID.",
+            description="Retrieves the full details of a customer account (company) by its exact name or ID.",
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "account_name": {"type": "string", "description": "Le nom exact du compte (ex: 'Acme Corp')."},
-                    "account_id": {"type": "string", "description": "L'ID Salesforce du compte (ex: '0015Y00002oR...')."}
+                    "account_name": {"type": "string", "description": "The exact name of the account (e.g., 'Acme Corp')."},
+                    "account_id": {"type": "string", "description": "The Salesforce ID of the account (e.g., '0015Y00002oR...')."}
                 },
-                "description": "Fournir soit account_name, soit account_id."
+                "description": "Provide either account_name or account_id."
             },
         ),
         types.Tool(
             name="list_open_opportunities",
-            description="Liste toutes les opportunités de vente (affaires) qui ne sont pas encore clôturées.",
+            description="Lists all sales opportunities (deals) that are not yet closed.",
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "account_id": {"type": "string", "description": "(Optionnel) Filtre les opportunités pour un compte spécifique par son ID."},
-                    "owner_email": {"type": "string", "description": "(Optionnel) Filtre les opportunités appartenant à un commercial spécifique par son email."}
+                    "account_id": {"type": "string", "description": "(Optional) Filters opportunities for a specific account by its ID."},
+                    "owner_email": {"type": "string", "description": "(Optional) Filters opportunities belonging to a specific sales representative by their email."}
                 },
             },
         ),
         types.Tool(
             name="log_activity",
-            description="Enregistre une activité (comme un appel ou un email) et l'associe à un enregistrement (Contact, Compte, Opportunité).",
+            description="Logs an activity (like a call or email) and associates it with a record (Contact, Account, Opportunity).",
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "related_to_id": {"type": "string", "description": "L'ID Salesforce de l'enregistrement auquel lier cette activité (ex: un ID de Contact ou de Compte)."},
-                    "subject": {"type": "string", "description": "Le titre ou l'objet de l'activité (ex: 'Appel de suivi')."},
-                    "description": {"type": "string", "description": "Une description détaillée de ce qui s'est passé durant l'activité."}
+                    "related_to_id": {"type": "string", "description": "The Salesforce ID of the record to link this activity to (e.g., a Contact or Account ID)."},
+                    "subject": {"type": "string", "description": "The title or subject of the activity (e.g., 'Follow-up call')."},
+                    "description": {"type": "string", "description": "A detailed description of what happened during the activity."}
                 },
                 "required": ["related_to_id", "subject", "description"],
             },
         ),
         
-        # --- Outils Service Cloud ---
+        # --- Service Cloud Tools ---
         types.Tool(
             name="get_case_details",
-            description="Récupère les détails d'un ticket de support (Case) en utilisant son numéro de ticket.",
+            description="Retrieves the details of a support ticket (Case) using its ticket number.",
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "case_number": {"type": "string", "description": "Le numéro visible du ticket (ex: '00001234')."}
+                    "case_number": {"type": "string", "description": "The visible ticket number (e.g., '00001234')."}
                 },
                 "required": ["case_number"],
             },
         ),
         types.Tool(
             name="list_open_cases",
-            description="Liste tous les tickets de support ouverts, filtrés par email du contact ou nom du compte.",
+            description="Lists all open support tickets, filtered by contact email or account name.",
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "contact_email": {"type": "string", "description": "(Optionnel) L'email du client pour trouver ses tickets."},
-                    "account_name": {"type": "string", "description": "(Optionnel) Le nom exact du compte pour trouver ses tickets."}
+                    "contact_email": {"type": "string", "description": "(Optional) The customer's email to find their tickets."},
+                    "account_name": {"type": "string", "description": "(Optional) The exact name of the account to find its tickets."}
                 },
             },
         ),
         types.Tool(
             name="create_case",
-            description="Crée un nouveau ticket de support pour un client.",
+            description="Creates a new support ticket for a customer.",
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "subject": {"type": "string", "description": "Le titre du problème."},
-                    "description": {"type": "string", "description": "La description complète du problème rencontré par le client."},
-                    "priority": {"type": "string", "enum": ["Low", "Medium", "High"], "description": "La priorité du ticket (par défaut 'Medium')."},
-                    "contact_id": {"type": "string", "description": "(Optionnel) L'ID du contact créant le ticket."},
-                    "account_id": {"type": "string", "description": "(Optionnel) L'ID du compte associé au ticket."}
+                    "subject": {"type": "string", "description": "The title of the issue."},
+                    "description": {"type": "string", "description": "The full description of the issue encountered by the customer."},
+                    "priority": {"type": "string", "enum": ["Low", "Medium", "High"], "description": "The priority of the ticket (defaults to 'Medium')."},
+                    "contact_id": {"type": "string", "description": "(Optional) The ID of the contact creating the ticket."},
+                    "account_id": {"type": "string", "description": "(Optional) The ID of the account associated with the ticket."}
                 },
                 "required": ["subject", "description"],
-                "description": "Il faut fournir au moins un contact_id ou un account_id."
+                "description": "At least one of contact_id or account_id must be provided."
             },
         ),
         types.Tool(
             name="add_comment_to_case",
-            description="Ajoute un commentaire (une note) à un ticket de support existant.",
+            description="Adds a comment (a note) to an existing support ticket.",
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "case_id": {"type": "string", "description": "L'ID Salesforce du ticket (ex: '5005Y0000...')."},
-                    "comment": {"type": "string", "description": "Le contenu du commentaire à ajouter."},
-                    "is_internal": {"type": "boolean", "description": "Mettre à 'true' pour une note interne (non visible par le client), 'false' pour un commentaire public."}
+                    "case_id": {"type": "string", "description": "The Salesforce ID of the ticket (e.g., '5005Y0000...')."},
+                    "comment": {"type": "string", "description": "The content of the comment to add."},
+                    "is_internal": {"type": "boolean", "description": "Set to 'true' for an internal note (not visible to the customer), 'false' for a public comment."}
                 },
                 "required": ["case_id", "comment"],
             },
         ),
         
-        # --- Outil de Recherche Globale ---
+        # --- Global Search Tool ---
         types.Tool(
             name="search_salesforce",
-            description="Recherche globale dans Salesforce (Comptes, Contacts, Opportunités, Tickets) avec un terme de recherche.",
+            description="Global search in Salesforce (Accounts, Contacts, Opportunities, Cases) with a search term.",
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "query": {"type": "string", "description": "Le terme à rechercher (ex: 'Acme', 'Dupont', 'Problème imprimante')."}
+                    "query": {"type": "string", "description": "The term to search for (e.g., 'Acme', 'Smith', 'Printer issue')."}
                 },
                 "required": ["query"],
             },
